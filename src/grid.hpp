@@ -22,6 +22,7 @@ public:
     void FillRandom();
     void Clear();
     void ToggleCell(int row, int col);
+    int WrapIndex(int index, int max) const;
     
 };
 

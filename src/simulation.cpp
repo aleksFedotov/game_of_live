@@ -1,118 +1,135 @@
-#include "simulation.hpp"
+#include "simulation.hpp"  // Include the header file for the Simulation class
 
+// Draws the current state of the grid
 void Simulation::Draw()
 {
-    grid.Draw();
+    grid.Draw();  // Calls the Grid's Draw method to render the grid
 }
 
+// Updates the simulation state based on the rules of Conway's Game of Life
 void Simulation::Update()
 {
-    if(IsRunning())
+    if (IsRunning())  // Only update if the simulation is running
     {
-        for(int row = 0; row < grid.GetRows(); row++)
+        // Iterate over each cell in the grid
+        for (int row = 0; row < grid.GetRows(); row++)
+        {
+            for (int col = 0; col < grid.GetColumns(); col++)
             {
-                for(int col = 0; col < grid.GetColumns(); col++)
+                int liveNeighbors = CountLiveNeighbors(row, col);  // Count live neighbors
+                int cellValue = grid.GetValue(row, col);  // Get the current cell value (alive or dead)
+                
+                // Apply the rules of Conway's Game of Life
+                if (cellValue == 1)  // Cell is alive
                 {
-                    int liveNeighbors = CountLiveNeighbors(row, col);
-                    int cellValue = grid.GetValue(row, col);
-                    
-                    if(cellValue == 1)
+                    // A live cell dies if it has less than 2 or more than 3 live neighbors
+                    if (liveNeighbors > 3 || liveNeighbors < 2)
                     {
-                        if(liveNeighbors > 3 || liveNeighbors < 2)
-                        {
-                            tempGrid.SetValue(row, col, 0);
-                        }
-                        else
-                        {
-                            tempGrid.SetValue(row, col, 1);
-                        }
+                        tempGrid.SetValue(row, col, 0);  // Cell dies
                     }
                     else
                     {
-                        if(liveNeighbors == 3)
-                        {
-                            tempGrid.SetValue(row, col, 1);
-                        }
-                        else
-                        {
-                            tempGrid.SetValue(row, col, 0);
-                        }
+                        tempGrid.SetValue(row, col, 1);  // Cell survives
+                    }
+                }
+                else  // Cell is dead
+                {
+                    // A dead cell becomes alive if it has exactly 3 live neighbors
+                    if (liveNeighbors == 3)
+                    {
+                        tempGrid.SetValue(row, col, 1);  // Cell becomes alive
+                    }
+                    else
+                    {
+                        tempGrid.SetValue(row, col, 0);  // Cell remains dead
                     }
                 }
             }
-            grid = tempGrid;
+        }
+        grid = tempGrid;  // Copy the temporary grid to the main grid
     }
-    
 }
 
+// Sets the value of a specific cell (1 = alive, 0 = dead)
 void Simulation::SetCellValue(int row, int col, int value)
 {
-    grid.SetValue(row,col,value);
+    grid.SetValue(row, col, value);
 }
 
+// Counts the number of live neighbors around a specific cell
 int Simulation::CountLiveNeighbors(int row, int col)
 {
     int liveNeighbors = 0;
-    std::vector<std::pair<int,int>> neighborsOffsets = 
+    int rows = grid.GetRows();
+    int cols = grid.GetColumns();
+    // Offsets for all 8 possible neighbors relative to a cell
+    std::vector<std::pair<int, int>> neighborsOffsets = 
     {
-        {-1, 0}, 
-        {1, 0},  
-        {0, -1}, 
-        {0, 1},  
-        {-1, -1},
-        {-1, 1}, 
-        {1, -1}, 
-        {1, 1} 
+        {-1, 0},  // Up
+        {1, 0},   // Down
+        {0, -1},  // Left
+        {0, 1},   // Right
+        {-1, -1}, // Top-left
+        {-1, 1},  // Top-right
+        {1, -1},  // Bottom-left
+        {1, 1}    // Bottom-right
     };
 
-
-    for( auto& offset : neighborsOffsets)
+    // Loop through each neighbor offset
+    for (auto& offset : neighborsOffsets)
     {
-        int neighborRow = (row + offset.first + grid.GetRows()) % grid.GetRows();
-        int neighborColumn = (col + offset.second + grid.GetColumns()) % grid.GetColumns();
+        // Calculate the position of the neighbor (using wrapping for grid edges)
+        int neighborRow = grid.WrapIndex(row + offset.first, rows);
+        int neighborCol = grid.WrapIndex(col + offset.second, cols);
         
-        
-        liveNeighbors += grid.GetValue(neighborRow,neighborColumn);
+        // Add the value of the neighbor cell to the liveNeighbors count
+        liveNeighbors += grid.GetValue(neighborRow, neighborCol);
     }
- 
-    return liveNeighbors;
+
+    return liveNeighbors;  // Return the total number of live neighbors
 }
 
+// Returns whether the simulation is currently running
 bool Simulation::IsRunning()
 {
     return run;
 }
 
+// Starts the simulation
 void Simulation::Start()
 {
     run = true;
 }
 
+// Stops the simulation
 void Simulation::Stop()
 {
     run = false;
 }
 
+// Clears the grid by setting all cells to dead, but only if the simulation is stopped
 void Simulation::clearGrid()
 {
-    if(!IsRunning())
+    if (!IsRunning())  // Prevent clearing while the simulation is running
     {
         grid.Clear();
     }
 }
 
+// Randomly populates the grid with live and dead cells, but only if the simulation is stopped
 void Simulation::CreateRandomState()
 {
-    if(!IsRunning())
+    if (!IsRunning())  // Prevent randomization while the simulation is running
     {
         grid.FillRandom();
     }
 }
 
+// Toggles the state of a specific cell between alive and dead, but only if the simulation is stopped
 void Simulation::ToggleCell(int row, int col)
 {
-    if(!IsRunning())
+    if (!IsRunning())  // Prevent toggling while the simulation is running
     {
-        grid.ToggleCell(row,col);
+        grid.ToggleCell(row, col);
     }
 }
