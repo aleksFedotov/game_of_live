@@ -17,6 +17,11 @@ This project is an implementation of **Conway's Game of Life**, a zero-player ga
 
 ---
 
+## Screenshots
+![Gameplay](game_of_live.png)
+
+---
+
 ## Controls
 
 | Key/Mouse           | Action                                 |
